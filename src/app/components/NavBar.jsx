@@ -6,7 +6,7 @@ function NavBar(){
             <ul>
                 <li> <Link href="/">Accueil</Link></li>
                 <li> <Link href="/connexion">Connexion</Link></li>
-                <li> <Link href="/">Inscription</Link></li>
+                <li> <Link href="/inscription">Inscription</Link></li>
             </ul>
         </nav>
     );

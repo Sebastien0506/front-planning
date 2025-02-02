@@ -1,49 +1,43 @@
 "use client";
-import React from "react";
-import EmailInput from "../components/EmailInput";
-import PasswordInput from "../components/PasswordInput";
+import React, { useState } from "react";
+import { validateEmail, validatePassword } from "@/utils/validation";
 
-function PageConnexion(){
-    const [email, setEmail] = React.useState("");
-    const [isValid, setIsValid] = React.useState(false);
+const LoginForm = () => {
+    const [email, setEmail] = useState("");
+    const [isValid, setIsValid] = useState(false);
 
-    const [password, setPassword] = React.useState("");
-    const [isValidPassword, setIsValidPassword] = React.useState(false);
-
-    const handlePasswordChange = (newPassword) => {
-        setPassword(newPassword);
-        setIsValidPassword(validatePassword(newPassword));
-    };
-
-    const validatePassword = (password) => {
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-        return passwordRegex.test(password);
-    }
-
+    const [password, setPassword] = useState("");
+    const [isValidPassword, setIsValidPassword] = useState(false);
 
     const handleEmailChange = (newEmail) => {
         setEmail(newEmail);
         setIsValid(validateEmail(newEmail));
     };
 
-    const validateEmail = (email) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-
+    const handlePasswordChange = (newPassword) => {
+        setPassword(newPassword);
+        setIsValidPassword(validatePassword(newPassword));
     };
 
-
-    return(
+    return (
         <div>
-            <h1>Connexion</h1>
-            <EmailInput email={email} onEmailChange={handleEmailChange}/>
-            <p>{isValid ? "Email valide ✅" : "Email invalide ❌"}</p>
-            
-            <PasswordInput password={password} onPasswordChange={handlePasswordChange}/>
-            <p>{isValidPassword ? "Password valide ✅" : "Password invalide ❌"}</p>
+            <input 
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => handleEmailChange(e.target.value)}
+            />
+            <span>{isValid ? "✅ Email valide" : "❌ Email invalide"}</span>
 
+            <input 
+                type="password"
+                placeholder="Mot de passe"
+                value={password}
+                onChange={(e) => handlePasswordChange(e.target.value)}
+            />
+            <span>{isValidPassword ? "✅ Mot de passe valide" : "❌ Mot de passe invalide"}</span>
         </div>
     );
-}
+};
 
-export default PageConnexion;
+export default LoginForm;
