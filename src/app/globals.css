@@ -16,16 +16,5 @@
 }
 
 body {
-  background: linear-gradient(to bottom, rgb(152, 150, 150), white);
-  background-repeat: no-repeat; 
-  background-attachment: fixed; 
-  min-height: 100vh; 
-  margin: 0; 
-}
-
-ul {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  margin-top: 1%;
+   background-color: #313338;
 }
