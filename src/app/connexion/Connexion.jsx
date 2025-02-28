@@ -6,6 +6,56 @@ const inter = Inter({ subsets: ["latin"], weight: ["600"] });
 const inter2 = Inter({ subsets: ["latin"], weight: ["400"] });
 
 const LoginForm = () => {
+    const [email, setEmail] = React.useState("");
+    const [password, setPassword] = React.useState("");
+    const [emailVerify, setEmailVerify] = React.useState("");
+    const [passwordVerify, setPasswordVerify] = React.useState("");
+
+    React.useEffect(() => {
+        async function getData() {
+            const url = 'http://127.0.0.1:8000/get_csrf_token';
+            try {
+                const response = await fetch(url, {
+                    method: "GET",
+                    credentials: "include",
+                });
+                if (!response.ok) {
+                    throw new Error(`Error status: ${response.status}`);
+                }
+
+                const json = await response.json();
+                console.log(json);
+            } catch (error) {
+                console.error("Erreur lors de la récupération du token CSRF:", error.message);
+            }
+        }
+        getData();
+    }, []);
+
+    function handleChangeEmail(e) {
+        const newEmail = e.target.value
+        setEmail(newEmail);
+
+        const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (regex.test(newEmail)){
+            setEmailVerify("Email correct");
+        } else {
+            setEmailVerify("Email incorrect");
+        }
+    }
+
+    function handleChangePassword(e) {
+        const newPassword = e.target.value;
+        setPassword(newPassword);
+        
+        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if (regex.test(newPassword)) {
+            setPasswordVerify("Password correct");
+        } else {
+            setPasswordVerify("Password incorrect");
+        }
+        
+    }
     return (
         <div
             style={{
@@ -45,6 +95,8 @@ const LoginForm = () => {
                         <input 
                             type="email"
                             placeholder="Email"
+                            value={email}
+                            onChange={handleChangeEmail}
                             style={{
                                 width: "100%",
                                 padding: "10px",
@@ -54,6 +106,7 @@ const LoginForm = () => {
                                 fontSize: "1rem",
                             }}
                         />
+                        <span style={{color: "green"}}>{emailVerify}</span>
                     </div>
 
                     <div style={{ width: "100%" }}>
@@ -63,6 +116,8 @@ const LoginForm = () => {
                         <input 
                             type="password"
                             placeholder="Mot de passe"
+                            value={password}
+                            onChange={handleChangePassword}
                             style={{
                                 width: "100%",
                                 padding: "10px",
@@ -72,6 +127,11 @@ const LoginForm = () => {
                                 fontSize: "1rem",
                             }}
                         />
+                        <div style={{display: "flex", flexDirection: "column"}}>
+                            <span style={{color: "white"}}>Le mot de passe doit contenir une minscule, une majscule, un chiffre, un caractère spécial et doit faire minimum 8 caractère</span>
+                            <span style={{color: "green"}}>{passwordVerify}</span>
+                        </div>
+                        
                     </div>
 
                     <button
