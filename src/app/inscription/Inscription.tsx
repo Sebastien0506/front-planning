@@ -1,11 +1,76 @@
 "use client";
 import React from "react";
 import { Inter } from "next/font/google";
+import { useState, useEffect } from "react";
 
 const inter = Inter({ subsets: ["latin"], weight: ["600"] });
 const inter2 = Inter({ subsets: ["latin"], weight: ["400"] });
 
 const InscriptionForm = () => {
+    const [name, setName] = useState("");
+    const [nameError, setNameError] = useState("");
+    const [lastname, setLastname] = useState("");
+    const [lastnameError, setLastnameError] = useState("");
+    const [email, setEmail] = useState("");
+    const [emailError, setEmailError] = useState("");
+    const [password, setPassword] = useState(""); 
+    const [passwordError, setPasswordError] = useState("");
+
+    useEffect(() => {
+        async function getData() {
+            const url = "http://127.0.0.1:8000/get_csrf_token";
+            try {
+                const response = await fetch(url, { method: "GET", credentials: "include" });
+                if (!response.ok) throw new Error(`Error status: ${response.status}`);
+
+                const json = await response.json();
+                console.log(json);
+            } catch (error) {
+                console.error("Erreur lors de la récupération du token CSRF:", error.message);
+            }
+        }
+        getData();
+    }, []);
+
+    const sendInscriptionRequest = async (name, lastname, email, password) => {
+        const url = "http://127.0.0.1:8000/api/add_admin";
+        const payload = {
+            name : encodeURIComponent(name),
+            lastname : encodeURIComponent(lastname),
+            email : encodeURIComponent(email),
+            password : password,
+        };
+
+        try {
+            const response = await fetch(url, {
+              method: "POST",
+              headers: {
+                "Content-Type" : "application/json",
+                "Accept" : "application/json",
+              },
+              body : JSON.stringify(payload),
+              credentials: "include",
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                alert(`Erreur: ${errorData.message || response.statusText}`);
+                return;
+            }
+
+            const data = await response.json();
+            alert("Connexion réussi");
+
+        } catch(error) {
+            alert("Erreur réseau" + error.message);
+        }
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        sendInscriptionRequest(name, lastname, email, password);
+    }
     return (
         <div
             style={{
@@ -30,7 +95,7 @@ const InscriptionForm = () => {
                     Inscription
                 </h1>
                 <form 
-                    action="" 
+                    onSubmit={handleSubmit} 
                     style={{
                         display: "flex",
                         flexDirection: "column",

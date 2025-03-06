@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { validateEmail, validatePassword } from "@/utils/validation";
+import { validateEmail, validatePassword } from "../../utils/validationConnexion";
 
 const LoginForm = () => {
     const [email, setEmail] = useState("");
@@ -24,23 +24,47 @@ const LoginForm = () => {
         getData();
     }, []);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    const sendLoginRequest = async (email: string, password: string): Promise<void> => {
+        const url = "http://127.0.0.1:8000/api/login";
+        const payload = {
+            email : encodeURIComponent(email),
+            password : password,
+        };
 
-        // Validation email
-        const emailValidation = validateEmail(email);
-        setEmailError(emailValidation);
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type" : "application/json",
+                    "Accept" : "application/json",
+                },
+                body: JSON.stringify(payload),
+                credentials: 'include', 
+            });
 
-        // Validation mot de passe
-        const passwordValidation = validatePassword(password);
-        setPasswordError(passwordValidation);
+            if(!response.ok) {
+                const errorData = await response.json();
+                alert(`Erreur: ${errorData.message || response.statusText}`);
+                return;
+            }
 
-        // Vérifier si aucune erreur
-        if (!emailValidation && !passwordValidation) {
-            alert("Formulaire valide !");
-            // Ici, tu peux envoyer les données au backend
+            const data = await response.json();
+            alert("Connexion réussie");
+        } catch (error: any) {
+            alert("Erreur réseau : " + error.message);
         }
     };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+    
+        if (!validateEmail(email)) return;
+        if (!validatePassword(password)) return;
+    
+        sendLoginRequest(email, password);
+    };
+
+
 
     return (
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
@@ -85,12 +109,7 @@ const LoginForm = () => {
                             onChange={(e) => setPassword(e.target.value)}
                             style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc", height: "40px", fontSize: "1rem" }}
                         />
-                        <div style={{ display: "flex", flexDirection: "column" }}>
-                            <span style={{ color: "white", fontSize: "0.8rem" }}>
-                                Le mot de passe doit contenir une minuscule, une majuscule, un chiffre, un caractère spécial et au moins 8 caractères.
-                            </span>
-                            {passwordError && <span style={{ color: "red", fontSize: "0.9rem" }}>{passwordError}</span>}
-                        </div>
+                        
                     </div>
 
                     {/* Bouton de soumission */}
