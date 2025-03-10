@@ -1,55 +1,62 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { validateEmail, validatePassword } from "../../utils/validationConnexion";
+import { useRouter } from "next/navigation";
 
 const LoginForm = () => {
+    const router = useRouter()
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [emailError, setEmailError] = useState("");
     const [passwordError, setPasswordError] = useState("");
 
     useEffect(() => {
-        async function getData() {
-            const url = "http://127.0.0.1:8000/get_csrf_token";
-            try {
-                const response = await fetch(url, { method: "GET", credentials: "include" });
-                if (!response.ok) throw new Error(`Error status: ${response.status}`);
-
-                const json = await response.json();
-                console.log(json);
-            } catch (error) {
-                console.error("Erreur lors de la récupération du token CSRF:", error.message);
+        async function getCsrfToken() {
+            const response = await fetch("http://127.0.0.1:8000/get_csrf_token/", {
+                method: "GET",
+                credentials: "include"  // ✅ Important pour récupérer le cookie !
+            });
+    
+            if (!response.ok) {
+                console.error("Erreur lors de la récupération du token CSRF");
+                return;
             }
+    
+            
         }
-        getData();
+        getCsrfToken();
     }, []);
 
     const sendLoginRequest = async (email: string, password: string): Promise<void> => {
-        const url = "http://127.0.0.1:8000/api/login";
+        const url = "http://127.0.0.1:8000/api/login/";
+    
         const payload = {
-            email : encodeURIComponent(email),
-            password : password,
+            email,
+            password
         };
-
+    
         try {
             const response = await fetch(url, {
                 method: "POST",
                 headers: {
-                    "Content-Type" : "application/json",
-                    "Accept" : "application/json",
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
                 },
+                credentials: "include",  // ✅ Important pour envoyer les cookies de session CSRF
                 body: JSON.stringify(payload),
-                credentials: 'include', 
             });
-
-            if(!response.ok) {
-                const errorData = await response.json();
-                alert(`Erreur: ${errorData.message || response.statusText}`);
+    
+            const responseData = await response.json();
+    
+            if (!response.ok) {
+                console.error("Erreur API : ", responseData);
+                alert(`Erreur: ${responseData.error || responseData.message || "Erreur inconnue"}`);
                 return;
             }
-
-            const data = await response.json();
-            alert("Connexion réussie");
+    
+            alert("Connexion réussie ✅");
+            router.push("/Home");
+    
         } catch (error: any) {
             alert("Erreur réseau : " + error.message);
         }
@@ -136,3 +143,7 @@ const LoginForm = () => {
 };
 
 export default LoginForm;
+
+function getCookie(arg0: string) {
+    throw new Error("Function not implemented.");
+}

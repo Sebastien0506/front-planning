@@ -2,11 +2,14 @@
 import React from "react";
 import { Inter } from "next/font/google";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 const inter = Inter({ subsets: ["latin"], weight: ["600"] });
 const inter2 = Inter({ subsets: ["latin"], weight: ["400"] });
 
 const InscriptionForm = () => {
+    const router = useRouter();
+
     const [name, setName] = useState("");
     const [nameError, setNameError] = useState("");
     const [lastname, setLastname] = useState("");
@@ -32,7 +35,7 @@ const InscriptionForm = () => {
         getData();
     }, []);
 
-    const sendInscriptionRequest = async (name, lastname, email, password) => {
+    const sendInscriptionRequest = async (name: string, lastname: string, email: string, password: string) => {
         const url = "http://127.0.0.1:8000/api/add_admin";
         const payload = {
             name : encodeURIComponent(name),
@@ -60,6 +63,7 @@ const InscriptionForm = () => {
 
             const data = await response.json();
             alert("Connexion réussi");
+            router.push("/Home")
 
         } catch(error) {
             alert("Erreur réseau" + error.message);

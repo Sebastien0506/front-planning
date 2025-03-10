@@ -1,4 +1,4 @@
-export const sanitizeInput = (input) => {
+export const sanitizeInput = (input: string) => {
     let sanitized = "";
     for (let i = 0; i < input.length; i++) {
         let char = input[i];
@@ -15,7 +15,7 @@ export const sanitizeInput = (input) => {
     return sanitized;
 };
 
-export const validateName = (name) => {
+export const validateName = (name: string) => {
     if (!name) {
         throw new Error("Le nom ne peut pas être vide.");
     }
@@ -36,8 +36,29 @@ export const validateName = (name) => {
 
     return name.trim();
 };
+export const validateLastName = (lastname: string) => {
+    if (!lastname) {
+        throw new Error("Le nom ne peut pas être vide.");
+    }
 
-export const validateEmail = (email) => {
+    for (let char of lastname) {
+        const charCode = char.charCodeAt(0);
+
+        // Vérifie si le caractère est une lettre, un espace ou un tiret
+        if (
+            !(charCode >= 65 && charCode <= 90) &&  // A-Z
+            !(charCode >= 97 && charCode <= 122) && // a-z
+            !(charCode >= 192 && charCode <= 255) && // Lettres accentuées (latin étendu)
+            char !== ' ' && char !== '-'  // Autorise espaces et tirets
+        ) {
+            throw new Error("Le nom contient des caractères non autorisés.");
+        }
+    }
+
+    return lastname.trim();
+};
+
+export const validateEmail = (email: string) => {
     const emailSanitized = sanitizeInput(email);
     const domainesAutorises = ["gmail.com", "yahoo.com", "outlook.com"];
 
@@ -61,7 +82,7 @@ export const validateEmail = (email) => {
     return true;
 };
 
-export const validatePassword = (password) => {
+export const validatePassword = (password: string) => {
     let hasUpperCase = false;
     let hasLowerCase = false;
     let hasNumber = false;

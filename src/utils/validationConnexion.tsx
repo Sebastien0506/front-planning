@@ -1,4 +1,4 @@
-export const sanitizeInput = (input) => {
+export const sanitizeInput = (input: string) => {
     let sanitized = "";
     for (let i = 0; i < input.length; i++) {
         let char = input[i];
@@ -39,7 +39,7 @@ export const validateEmail = (email: string) => {
     return true;
 };
 
-export const validatePassword = (password) => {
+export const validatePassword = (password: string) => {
     let hasUpperCase = false;
     let hasLowerCase = false;
     let hasNumber = false;
