@@ -15,12 +15,12 @@ export const sanitizeInput = (input: string) => {
     return sanitized;
 };
 
-export const validateName = (name: string) => {
-    if (!name) {
+export const validateName = (username: string) => {
+    if (!username) {
         throw new Error("Le nom ne peut pas être vide.");
     }
 
-    for (let char of name) {
+    for (let char of username) {
         const charCode = char.charCodeAt(0);
 
         // Vérifie si le caractère est une lettre, un espace ou un tiret
@@ -34,7 +34,7 @@ export const validateName = (name: string) => {
         }
     }
 
-    return name.trim();
+    return username.trim();
 };
 export const validateLastName = (lastname: string) => {
     if (!lastname) {
@@ -63,7 +63,7 @@ export const validateEmail = (email: string) => {
     const domainesAutorises = ["gmail.com", "yahoo.com", "outlook.com"];
 
     if (!emailSanitized.includes("@") || !emailSanitized.includes(".")) {
-        alert("Email invalide ! Il doit contenir '@' et un domaine.");
+        alert("Email invalide ! Il doit contenir '@' et un nom de domaine valide.");
         return false;
     }
 

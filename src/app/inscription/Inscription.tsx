@@ -3,6 +3,7 @@ import React from "react";
 import { Inter } from "next/font/google";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { validateEmail, validateLastName, validateName, validatePassword } from "../../utils/validationInscription";
 
 const inter = Inter({ subsets: ["latin"], weight: ["600"] });
 const inter2 = Inter({ subsets: ["latin"], weight: ["400"] });
@@ -10,7 +11,7 @@ const inter2 = Inter({ subsets: ["latin"], weight: ["400"] });
 const InscriptionForm = () => {
     const router = useRouter();
 
-    const [name, setName] = useState("");
+    const [username, setName] = useState("");
     const [nameError, setNameError] = useState("");
     const [lastname, setLastname] = useState("");
     const [lastnameError, setLastnameError] = useState("");
@@ -20,27 +21,28 @@ const InscriptionForm = () => {
     const [passwordError, setPasswordError] = useState("");
 
     useEffect(() => {
-        async function getData() {
-            const url = "http://127.0.0.1:8000/get_csrf_token";
-            try {
-                const response = await fetch(url, { method: "GET", credentials: "include" });
-                if (!response.ok) throw new Error(`Error status: ${response.status}`);
-
-                const json = await response.json();
-                console.log(json);
-            } catch (error) {
-                console.error("Erreur lors de la récupération du token CSRF:", error.message);
+        async function getCsrfToken() {
+            const response = await fetch("http://127.0.0.1:8000/get_csrf_token/", {
+                method: "GET",
+                credentials: "include"  // ✅ Important pour récupérer le cookie !
+            });
+            // console.log(response);
+            if (!response.ok) {
+                console.error("Erreur lors de la récupération du token CSRF");
+                return;
             }
+    
+            
         }
-        getData();
+        getCsrfToken();
     }, []);
 
-    const sendInscriptionRequest = async (name: string, lastname: string, email: string, password: string) => {
-        const url = "http://127.0.0.1:8000/api/add_admin";
+    const sendInscriptionRequest = async (username: string, lastname: string, email: string, password: string): Promise<void> => {
+        const url = "http://127.0.0.1:8000/api/add_admin/";
         const payload = {
-            name : encodeURIComponent(name),
-            lastname : encodeURIComponent(lastname),
-            email : encodeURIComponent(email),
+            username,
+            lastname,
+            email,
             password : password,
         };
 
@@ -51,29 +53,37 @@ const InscriptionForm = () => {
                 "Content-Type" : "application/json",
                 "Accept" : "application/json",
               },
-              body : JSON.stringify(payload),
               credentials: "include",
+
+              body : JSON.stringify(payload),
             });
             
+            const ResponseData = await response.json();
+
             if (!response.ok) {
                 const errorData = await response.json();
                 alert(`Erreur: ${errorData.message || response.statusText}`);
                 return;
             }
+            localStorage.setItem("user_role", ResponseData.role);
+            alert("Inscription résussi");
 
-            const data = await response.json();
-            alert("Connexion réussi");
-            router.push("/Home")
+            setTimeout(() => {
+                router.push("/redirect");
+            }, 5000);
 
-        } catch(error) {
+        } catch(error : any) {
             alert("Erreur réseau" + error.message);
         }
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
-        sendInscriptionRequest(name, lastname, email, password);
+        if(!validateEmail(email)) return;
+        if(!validateLastName(lastname)) return;
+        if(!validateName(username)) return;
+        if(!validatePassword(password)) return;
+        sendInscriptionRequest(username, lastname, email, password);
     }
     return (
         <div
@@ -114,6 +124,8 @@ const InscriptionForm = () => {
                         <input 
                             type="text"
                             placeholder="Nom"
+                            value={username}
+                            onChange={(e) => setName(e.target.value)}
                             style={{
                                 width: "100%",
                                 padding: "10px",
@@ -131,6 +143,8 @@ const InscriptionForm = () => {
                         <input 
                             type="text"
                             placeholder="Prenom"
+                            value={lastname}
+                            onChange={(e) => setLastname(e.target.value)}
                             style={{
                                 width: "100%",
                                 padding: "10px",
@@ -148,6 +162,8 @@ const InscriptionForm = () => {
                         <input 
                             type="email"
                             placeholder="Email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             style={{
                                 width: "100%",
                                 padding: "10px",
@@ -166,6 +182,8 @@ const InscriptionForm = () => {
                         <input 
                             type="password"
                             placeholder="Mot de passe"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                             style={{
                                 width: "100%",
                                 padding: "10px",

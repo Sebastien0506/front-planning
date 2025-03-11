@@ -16,7 +16,7 @@ const LoginForm = () => {
                 method: "GET",
                 credentials: "include"  // ✅ Important pour récupérer le cookie !
             });
-    
+            
             if (!response.ok) {
                 console.error("Erreur lors de la récupération du token CSRF");
                 return;
@@ -47,15 +47,18 @@ const LoginForm = () => {
             });
     
             const responseData = await response.json();
-    
+            console.log(responseData);
             if (!response.ok) {
                 console.error("Erreur API : ", responseData);
                 alert(`Erreur: ${responseData.error || responseData.message || "Erreur inconnue"}`);
                 return;
             }
-    
+            localStorage.setItem("user_role", responseData.role);
             alert("Connexion réussie ✅");
-            router.push("/Home");
+            
+            setTimeout(() => {
+                router.push("/redirect");
+            }, 500);
     
         } catch (error: any) {
             alert("Erreur réseau : " + error.message);
@@ -144,6 +147,3 @@ const LoginForm = () => {
 
 export default LoginForm;
 
-function getCookie(arg0: string) {
-    throw new Error("Function not implemented.");
-}
