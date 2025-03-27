@@ -3,21 +3,38 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Poppins, Ranga } from "next/font/google";
-
+import { useRouter } from "next/navigation";
 const poppins = Poppins({ subsets: ['latin'], weight: ["600"] });
 const ranga = Ranga({ subsets: ["latin"], weight: ["700"] });
 
 function NavBar() {
     const [role, setRole] = useState<string | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
-        // ✅ Récupérer le rôle stocké après la connexion
-        const storedRole = localStorage.getItem("user_role");
-        if (storedRole) {
-            setRole(storedRole);
-        }
+        const fetchRole = async () => {
+            try {
+                const response = await fetch("http://localhost:8000/api/get_user_role", {
+                    credentials: "include",
+                });
+                if(!response.ok) {
+                    throw new Error("Non connecté");
+                }
+                const data = await response.json();
+                setRole(data.role);
+            } catch (error) {
+                console.error("Erreur rôle dans la NavBar :", error)
+                setRole(null);
+            }
+        };
+        fetchRole();
     }, []);
-
+    // ✅ Fonction de déconnexion
+    const logout = () => {
+        localStorage.removeItem("user_role");  // ✅ Supprimer le rôle du stockage
+        setRole(null);
+        router.push("/");
+    };
     return (
         <nav style={{ display: "flex", flexDirection: "row", justifyContent: "space-around", backgroundColor: "#171717" }}>
             <span className={ranga.className} style={{ color: "white", fontSize: "2.5rem", marginLeft: "2%" }}>Planeasy</span>
@@ -28,7 +45,7 @@ function NavBar() {
                 {/* 🔹 Affichage conditionnel en fonction du rôle */}
                 {role === "admin" && (
                     <>
-                        <li><Link href="/dashboard">Admin Dashboard</Link></li>
+                        <li><Link href="/adminDashboard">Admin Dashboard</Link></li>
                         <li><Link href="/manage-users">Gérer les utilisateurs</Link></li>
                         <li><Link href="/profile">Profil</Link></li>
                         <li><Link href="/planning">Planning</Link></li>
@@ -62,10 +79,6 @@ function NavBar() {
     );
 }
 
-// ✅ Fonction de déconnexion
-const logout = () => {
-    localStorage.removeItem("user_role");  // ✅ Supprimer le rôle du stockage
-    window.location.reload();  // 🔄 Recharge la page pour réinitialiser la navbar
-};
+
 
 export default NavBar;

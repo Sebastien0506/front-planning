@@ -1,50 +1,64 @@
 "use client";
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 type UserContextType = {
     role: string | null;
-    setRole: (role: string | null) => void;
+    isAuthenticated: boolean;
+    logout: () => void;
+    refreshUser : () => Promise<void>;
 };
 
-// Création du contexte
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
     const [role, setRole] = useState<string | null>(null);
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+
+    // 👇 Rendu réutilisable
+    const refreshUser = async () => {
+        try {
+            const response = await fetch("http://localhost:8000/api/get_user_role/", {
+                method: "GET",
+                credentials: "include",
+            });
+
+            if (!response.ok) {
+                throw new Error("Utilisateur non authentifié");
+            }
+
+            const data = await response.json();
+            setRole(data.role);
+            setIsAuthenticated(true);
+        } catch (error) {
+            console.error("❌ Erreur récupération rôle :", error);
+            setRole(null);
+            setIsAuthenticated(false);
+        }
+    };
 
     useEffect(() => {
-        // ✅ Récupère le rôle UNE SEULE FOIS après le chargement
-        const fetchRole = async () => {
-            try {
-                const response = await fetch("http://127.0.0.1:8000/api/get_user_role/", {
-                    method: "GET",
-                    credentials: "include",
-                });
+        refreshUser(); // 🔁 appelée une seule fois au chargement
+    }, []);
 
-                if (!response.ok) {
-                    throw new Error("Utilisateur non authentifié");
-                }
+    const logout = async () => {
+        await fetch("http://localhost:8000/api/logout/", {
+            method: "POST",
+            credentials: "include",
+        });
 
-                const data = await response.json();
-                console.log("Rôle récupéré :", data.role);
-                setRole(data.role);
-
-            } catch (error) {
-                console.error("Erreur récupération rôle :", error);
-            }
-        };
-
-        fetchRole();
-    }, []);  // 🔹 S'exécute UNE SEULE FOIS
+        setRole(null);
+        setIsAuthenticated(false);
+    };
 
     return (
-        <UserContext.Provider value={{ role, setRole }}>
+        <UserContext.Provider value={{ role, isAuthenticated, logout, refreshUser }}>
             {children}
         </UserContext.Provider>
     );
 };
 
-// Hook personnalisé pour accéder au rôle
+// Hook pour accéder au contexte utilisateur
 export const useUser = () => {
     const context = useContext(UserContext);
     if (!context) {

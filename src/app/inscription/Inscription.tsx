@@ -38,7 +38,7 @@ const InscriptionForm = () => {
     }, []);
 
     const sendInscriptionRequest = async (username: string, lastname: string, email: string, password: string): Promise<void> => {
-        const url = "http://127.0.0.1:8000/api/add_admin/";
+        const url = "http://localhost/api/add_admin/";
         const payload = {
             username,
             lastname,

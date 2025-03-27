@@ -1,10 +1,12 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { validateEmail, validatePassword } from "../../utils/validationConnexion";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
+import { useUser } from "../../utils/UserContext";
 
 const LoginForm = () => {
-    const router = useRouter()
+    const {refreshUser} = useUser() ; 
+    const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [emailError, setEmailError] = useState("");
@@ -12,7 +14,7 @@ const LoginForm = () => {
 
     useEffect(() => {
         async function getCsrfToken() {
-            const response = await fetch("http://127.0.0.1:8000/get_csrf_token/", {
+            const response = await fetch("http://localhost:8000/get_csrf_token/", {
                 method: "GET",
                 credentials: "include"  // ✅ Important pour récupérer le cookie !
             });
@@ -28,7 +30,7 @@ const LoginForm = () => {
     }, []);
 
     const sendLoginRequest = async (email: string, password: string): Promise<void> => {
-        const url = "http://127.0.0.1:8000/api/login/";
+        const url = "http://localhost:8000/api/login/";
     
         const payload = {
             email,
@@ -42,24 +44,20 @@ const LoginForm = () => {
                     "Content-Type": "application/json",
                     "Accept": "application/json",
                 },
-                credentials: "include",  // ✅ Important pour envoyer les cookies de session CSRF
+                credentials: "include",  // ✅ Important pour envoyer les cookies de session
                 body: JSON.stringify(payload),
             });
     
-            const responseData = await response.json();
-            console.log(responseData);
             if (!response.ok) {
-                console.error("Erreur API : ", responseData);
+                const responseData = await response.json();
                 alert(`Erreur: ${responseData.error || responseData.message || "Erreur inconnue"}`);
                 return;
             }
-            localStorage.setItem("user_role", responseData.role);
-            alert("Connexion réussie ✅");
-            
-            setTimeout(() => {
-                router.push("/redirect");
-            }, 500);
     
+            alert("Connexion réussie ✅");
+            // await sendLoginRequest(email, password);
+            await refreshUser();
+            router.push('/');  // ✅ Recharge la page pour appliquer l'authentification
         } catch (error: any) {
             alert("Erreur réseau : " + error.message);
         }
